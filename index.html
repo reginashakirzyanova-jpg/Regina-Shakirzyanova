@@ -3,188 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#17324d">
-  <title>Safe, Smart, Ready — Library Safety</title>
+  <title>Library Security Camera</title>
   <style>
-    :root {
-      color-scheme: light;
-      --navy: #17324d;
-      --blue: #2878a8;
-      --mint: #c9f0df;
-      --cream: #fff8e9;
-      --ink: #17212b;
-    }
+    :root { color-scheme: dark; }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 1.25rem;
-      color: var(--ink);
-      background: linear-gradient(145deg, #dcebf5, #f8f2e5);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    body { margin: 0; min-height: 100vh; display:grid; place-items:center; background:#090d12; font-family:system-ui,sans-serif; color:#d9e5df; }
+    main { width:min(92vw,960px); }
+    .header { display:flex; justify-content:space-between; align-items:center; margin:0 0 .6rem; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; }
+    .rec { color:#ff6b62; } .rec::before { content:""; display:inline-block; width:.7rem; height:.7rem; margin-right:.45rem; border-radius:50%; background:#ed554d; box-shadow:0 0 12px #ed554d; }
+    .camera {
+      position:relative; overflow:hidden; aspect-ratio:16/9; border:8px solid #20272c; border-radius:8px;
+      background:linear-gradient(90deg,#0a0f0d 0 12%,#26352f 12% 32%,#4a6254 32% 65%,#1b2923 65% 100%);
+      filter:contrast(.78) saturate(.55) brightness(.72); box-shadow:0 0 40px #000;
     }
-    main { width: min(100%, 900px); }
-    .player {
-      overflow: hidden;
-      border: 5px solid white;
-      border-radius: 24px;
-      background: var(--cream);
-      box-shadow: 0 18px 55px #17324d2b;
-    }
-    .screen {
-      min-height: 460px;
-      display: grid;
-      grid-template-columns: minmax(180px, 0.8fr) 1.2fr;
-      align-items: center;
-      gap: clamp(1rem, 5vw, 3.5rem);
-      padding: clamp(1.5rem, 6vw, 4rem);
-      background: radial-gradient(circle at 18% 22%, #ffffff 0 8%, transparent 8.5%), linear-gradient(135deg, var(--cream), #f0f8f3);
-    }
-    .art {
-      display: grid;
-      place-items: center;
-      min-height: 220px;
-      border-radius: 28px;
-      background: var(--mint);
-      font-size: clamp(5rem, 15vw, 9rem);
-      animation: arrive .45s ease-out both;
-    }
-    .copy { animation: arrive .45s ease-out both; }
-    .eyebrow { color: var(--blue); font-size: .85rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-    h1 { margin: .4rem 0 1rem; color: var(--navy); font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; }
-    .caption { max-width: 42rem; margin: 0; font-size: clamp(1.1rem, 2.4vw, 1.45rem); line-height: 1.55; }
-    .controls { padding: 1rem clamp(1rem, 4vw, 2rem) 1.25rem; background: white; }
-    .progress-track { height: 8px; overflow: hidden; border-radius: 99px; background: #e6edf2; }
-    .progress { width: 0; height: 100%; background: var(--blue); transition: width .25s ease; }
-    .control-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: 1rem; }
-    .buttons { display: flex; flex-wrap: wrap; gap: .5rem; }
-    button { min-height: 44px; padding: .65rem 1rem; border: 0; border-radius: 12px; color: white; background: var(--navy); font: inherit; font-weight: 700; cursor: pointer; }
-    button.secondary { color: var(--navy); background: #e8f0f5; }
-    button:hover { filter: brightness(1.12); }
-    button:focus-visible { outline: 3px solid #e3a72f; outline-offset: 3px; }
-    #sceneCount { color: #485968; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .note { margin: .9rem 0 0; color: #485968; font-size: .9rem; }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-    @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 620px) {
-      .screen { min-height: 0; grid-template-columns: 1fr; gap: 1.25rem; }
-      .art { min-height: 145px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-    }
+    .timestamp { position:absolute; z-index:20; top:14px; left:18px; font:700 clamp(.7rem,2vw,1.1rem) monospace; text-shadow:1px 1px #000; }
+    .corner { position:absolute; z-index:20; width:38px; height:38px; border-color:#a4bbb0; opacity:.7; }
+    .tl { top:12px; left:12px; border-top:2px solid; border-left:2px solid; } .tr { top:12px; right:12px; border-top:2px solid; border-right:2px solid; } .bl { bottom:12px; left:12px; border-bottom:2px solid; border-left:2px solid; } .br { bottom:12px; right:12px; border-bottom:2px solid; border-right:2px solid; }
+    .building { position:absolute; left:0; top:0; bottom:28%; width:34%; background:linear-gradient(135deg,#1b2421,#46564c); clip-path:polygon(0 0,100% 12%,100% 100%,0 100%); box-shadow:12px 0 25px #0a100d; }
+    .window { position:absolute; width:17%; height:38%; left:8%; top:16%; background:#0d1713; border:5px solid #586a60; box-shadow:inset 0 0 25px #000; }
+    .door { position:absolute; width:22%; height:55%; right:-2%; top:24%; background:#17201d; border:4px solid #68786f; }
+    .shadow { position:absolute; z-index:4; width:20%; height:11%; left:27%; top:47%; border-radius:50%; background:#060807; filter:blur(5px); transform:rotate(-8deg); opacity:.95; }
+    .road { position:absolute; left:0; right:0; bottom:0; height:29%; background:linear-gradient(170deg,#526258,#252e29 80%); }
+    .garden { position:absolute; right:-3%; bottom:-3%; width:42%; height:34%; background:#18251b; clip-path:polygon(14% 100%,32% 32%,100% 0,100% 100%); }
+    .plant { position:absolute; bottom:20%; width:2.5%; height:18%; border-radius:50%; background:#41583d; }
+    .plant::before,.plant::after { content:""; position:absolute; width:170%; height:55%; border-radius:100% 0; background:#64785a; transform-origin:left bottom; }
+    .plant::before { left:-10%; bottom:45%; transform:rotate(-35deg); } .plant::after { right:-80%; bottom:30%; transform:rotate(25deg) scaleX(-1); }
+    .mouse { position:absolute; z-index:8; left:-12%; bottom:19%; width:55px; height:30px; border-radius:55% 45% 48% 52%; background:#8c9991; filter:drop-shadow(3px 5px 2px #111); animation:mouseCross 12s linear infinite; }
+    .mouse::before { content:""; position:absolute; right:-18px; top:5px; width:22px; height:22px; border-radius:50%; background:#9aa49e; box-shadow:4px -7px 0 -5px #738078; }
+    .mouse::after { content:""; position:absolute; left:-28px; top:15px; width:31px; height:8px; border-radius:50%; border-top:3px solid #9aa49e; transform:rotate(-12deg); }
+    .shine { position:absolute; z-index:9; width:14px; height:14px; left:-5px; top:5px; transform:rotate(45deg); background:#fff8ad; box-shadow:0 0 12px 5px #e8ef9c; animation:spark 1s steps(2) infinite; }
+    .person { position:absolute; z-index:7; right:-18%; bottom:10%; width:70px; height:145px; animation:personWalk 16s 2s linear infinite; }
+    .hat { position:absolute; z-index:3; left:-16px; top:-20px; width:102px; height:25px; border-radius:50%; background:#161d1a; box-shadow:0 8px 0 2px #29312d; }
+    .head { position:absolute; top:4px; left:23px; width:34px; height:38px; border-radius:45%; background:#30352f; }
+    .body { position:absolute; top:38px; left:7px; width:56px; height:82px; border-radius:18px 18px 8px 8px; background:#303b35; }
+    .leg { position:absolute; bottom:0; width:15px; height:34px; background:#202724; } .leg.left { left:13px; } .leg.right { right:12px; }
+    .scanlines { position:absolute; z-index:30; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px); mix-blend-mode:screen; }
+    .noise { position:absolute; z-index:31; inset:0; pointer-events:none; opacity:.12; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
+    .controls { display:flex; align-items:center; gap:.75rem; margin-top:.8rem; }
+    button { min-height:44px; border:1px solid #46534d; border-radius:8px; background:#1c2420; color:#eef7f1; padding:.6rem 1rem; font:700 1rem system-ui; cursor:pointer; }
+    button:focus-visible { outline:3px solid #d6b74b; outline-offset:3px; }
+    .status { margin-left:auto; color:#83958d; font-size:.9rem; }
+    @keyframes mouseCross { 0%,10% { left:-12%; } 72%,100% { left:78%; } }
+    @keyframes personWalk { 0%,15% { right:-18%; } 80%,100% { right:52%; } }
+    @keyframes spark { 50% { filter:brightness(1.8); transform:rotate(45deg) scale(.7); } }
+    @media (prefers-reduced-motion:reduce) { .mouse,.person,.shine { animation-play-state:paused; } }
   </style>
 </head>
 <body>
   <main>
-    <div class="player" aria-label="School library safety video">
-      <section class="screen" aria-live="polite" aria-atomic="true">
-        <div class="art" id="art" aria-hidden="true">📚</div>
-        <div class="copy">
-          <div class="eyebrow" id="eyebrow">A quick safety guide</div>
-          <h1 id="title">Safe, Smart, Ready</h1>
-          <p class="caption" id="caption">A few simple habits help everyone feel welcome and safe in our school library. Let’s get started.</p>
-        </div>
-      </section>
-      <div class="controls">
-        <div class="progress-track" role="progressbar" aria-label="Video progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="progress"></div></div>
-        <div class="control-row">
-          <div class="buttons">
-            <button type="button" class="secondary" id="back" aria-label="Previous scene">← Back</button>
-            <button type="button" id="play" aria-label="Play video">▶ Play</button>
-            <button type="button" class="secondary" id="next" aria-label="Next scene">Next →</button>
-            <button type="button" class="secondary" id="audio" aria-pressed="false">🔊 Narration off</button>
-          </div>
-          <span id="sceneCount" aria-live="polite">Scene 1 of 7</span>
-        </div>
-        <p class="note">Use the buttons or ← / → keys. Narration uses your browser’s voice and can be turned off anytime.</p>
-      </div>
+    <div class="header"><span>LIBRARY • Camera 02 • East entrance</span><span class="rec">Recording</span></div>
+    <div class="camera" id="camera" role="img" aria-label="Security camera view of the school library entrance: a shadow near the building, a mouse carrying a shiny object, and a person in a large hat walking toward the garden">
+      <span class="timestamp" id="timestamp">NOV 18 2026  18:42:09</span>
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div class="building"><div class="window"></div><div class="door"></div></div>
+      <div class="shadow"></div>
+      <div class="road"></div>
+      <div class="garden"></div>
+      <i class="plant" style="right:28%"></i><i class="plant" style="right:12%;height:24%"></i><i class="plant" style="right:4%;height:15%"></i>
+      <div class="mouse" id="mouse"><div class="shine"></div></div>
+      <div class="person" id="person"><div class="hat"></div><div class="head"></div><div class="body"></div><div class="leg left"></div><div class="leg right"></div></div>
+      <div class="scanlines"></div><div class="noise"></div>
     </div>
-    <p class="sr-only" id="status" aria-live="polite"></p>
+    <div class="controls">
+      <button id="play" type="button" aria-label="Play security clip">▶ Play</button>
+      <button id="rewind" type="button" aria-label="Restart security clip">↶ Restart</button>
+      <span class="status" id="status">Clip paused — 0:00 / 0:16</span>
+    </div>
   </main>
   <script>
-    const scenes = [
-      { icon: "📚", title: "Safe, Smart, Ready", text: "A few simple habits help everyone feel welcome and safe in our school library. Let’s get started." },
-      { icon: "🚪", title: "Know where to go", text: "Notice the nearest exits when you arrive. Keep doorways and walkways clear so everyone can move safely." },
-      { icon: "🎒", title: "Look after your things", text: "Keep your bag, books, and devices with you or in the places your school provides. Don’t leave valuables unattended." },
-      { icon: "🤝", title: "Make room for everyone", text: "Use a calm voice, respect personal space, and treat people and library materials with care." },
-      { icon: "🙋", title: "Speak up safely", text: "If something feels unsafe, tell the librarian, teacher, or another trusted school adult. Share what you noticed—don’t investigate or confront anyone." },
-      { icon: "🧑‍🏫", title: "Follow staff directions", text: "If there’s an alarm or emergency, stay calm, listen to school staff, and follow the school’s safety plan. Leave belongings behind if asked to evacuate." },
-      { icon: "💚", title: "We keep it safe together", text: "Be aware, be kind, and ask for help when you need it. A safe library is a place where everyone can learn." }
-    ];
-    const title = document.getElementById("title");
-    const caption = document.getElementById("caption");
-    const art = document.getElementById("art");
-    const eyebrow = document.getElementById("eyebrow");
-    const count = document.getElementById("sceneCount");
-    const bar = document.getElementById("progress");
-    const track = document.querySelector(".progress-track");
-    const playButton = document.getElementById("play");
-    const audioButton = document.getElementById("audio");
-    const status = document.getElementById("status");
-    let index = 0;
-    let timer = null;
-    let narration = false;
-    const sceneDuration = 6500;
-
-    function showScene(nextIndex) {
-      index = Math.max(0, Math.min(scenes.length - 1, nextIndex));
-      const scene = scenes[index];
-      art.textContent = scene.icon;
-      title.textContent = scene.title;
-      caption.textContent = scene.text;
-      eyebrow.textContent = index === 0 ? "A quick safety guide" : "School library safety";
-      count.textContent = `Scene ${index + 1} of ${scenes.length}`;
-      const percent = Math.round(((index + 1) / scenes.length) * 100);
-      bar.style.width = `${percent}%`;
-      track.setAttribute("aria-valuenow", String(percent));
-      status.textContent = `Scene ${index + 1}: ${scene.title}. ${scene.text}`;
-      if (narration && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(new SpeechSynthesisUtterance(`${scene.title}. ${scene.text}`));
-      }
+    const camera=document.getElementById('camera'), mouse=document.getElementById('mouse'), person=document.getElementById('person'), play=document.getElementById('play'), rewind=document.getElementById('rewind'), status=document.getElementById('status'), timestamp=document.getElementById('timestamp');
+    let running=false, seconds=0, timer=null;
+    function setMotion(playState){ [mouse,person].forEach(el=>{el.style.animationPlayState=playState?'running':'paused'}); }
+    function format(n){return `0:${String(n).padStart(2,'0')}`}
+    function start(){
+      if(running){clearInterval(timer);running=false;play.textContent='▶ Play';play.setAttribute('aria-label','Play security clip');setMotion(false);status.textContent=`Clip paused — ${format(seconds)} / 0:16`;return}
+      running=true;play.textContent='❚❚ Pause';play.setAttribute('aria-label','Pause security clip');setMotion(true);
+      timer=setInterval(()=>{seconds++; if(seconds>=16){clearInterval(timer);running=false;seconds=16;play.textContent='↻ Replay';setMotion(false);status.textContent='Clip ended — 0:16 / 0:16';return}status.textContent=`Clip playing — ${format(seconds)} / 0:16`},1000);
     }
-    function stop() {
-      clearInterval(timer);
-      timer = null;
-      playButton.textContent = "▶ Play";
-      playButton.setAttribute("aria-label", "Play video");
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    }
-    function play() {
-      if (timer) { stop(); return; }
-      if (index === scenes.length - 1) showScene(0);
-      playButton.textContent = "❚❚ Pause";
-      playButton.setAttribute("aria-label", "Pause video");
-      if (narration && "speechSynthesis" in window) {
-        const scene = scenes[index];
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(new SpeechSynthesisUtterance(`${scene.title}. ${scene.text}`));
-      }
-      timer = setInterval(() => {
-        if (index >= scenes.length - 1) { stop(); return; }
-        showScene(index + 1);
-      }, sceneDuration);
-    }
-    document.getElementById("back").addEventListener("click", () => { stop(); showScene(index - 1); });
-    document.getElementById("next").addEventListener("click", () => { stop(); showScene(index + 1); });
-    playButton.addEventListener("click", play);
-    audioButton.addEventListener("click", () => {
-      narration = !narration;
-      audioButton.textContent = narration ? "🔊 Narration on" : "🔊 Narration off";
-      audioButton.setAttribute("aria-pressed", String(narration));
-      if (!narration && "speechSynthesis" in window) window.speechSynthesis.cancel();
-      else if (narration) showScene(index);
-    });
-    document.addEventListener("keydown", event => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
-      if (event.key === "ArrowRight") { stop(); showScene(index + 1); }
-      if (event.key === "ArrowLeft") { stop(); showScene(index - 1); }
-      if (event.key === " " && event.target.tagName !== "BUTTON") { event.preventDefault(); play(); }
-    });
-    showScene(0);
+    function restart(){clearInterval(timer);seconds=0;running=false;play.textContent='▶ Play';status.textContent='Clip paused — 0:00 / 0:16';setMotion(false);mouse.style.animation='none';person.style.animation='none';void camera.offsetWidth;mouse.style.animation='mouseCross 12s linear infinite';person.style.animation='personWalk 16s 2s linear infinite';}
+    play.addEventListener('click',start);rewind.addEventListener('click',restart);
+    setInterval(()=>{const d=new Date(2026,10,18,18,42,9+seconds);const pad=n=>String(n).padStart(2,'0');timestamp.textContent=`NOV 18 2026  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`},1000);
+    setMotion(false);
   </script>
 </body>
 </html>
